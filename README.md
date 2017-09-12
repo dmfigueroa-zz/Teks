@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # electron-es6-react
 
 A simple boilerplate app to demonstrate how to use [ES6] and [React] with
@@ -27,3 +28,7 @@ npm start
 [Electron]: http://electron.atom.io/
 [Babel]: http://babeljs.io
 
+=======
+# Teks
+Editor de texto plano con función de autocompletado
+>>>>>>> b61b1bce1d943938572cb58e091b08f66baed66e
