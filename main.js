@@ -1,6 +1,10 @@
 import { app, BrowserWindow } from 'electron';
+import fs from 'fs';
+import ipcMain from 'electron';
+import Arbol from './Arbol';
 
 let mainWindow = null;
+const arbol = new Arbol();
 
 app.on('window-all-closed', () => {
   if (process.platform != 'darwin') {
@@ -14,4 +18,9 @@ app.on('ready', () => {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+});
+
+fs.readFile('./palabras.txt', 'utf-8', (error, data) => {
+  if (error) throw error;
+  arbol.ingresarPalabras(data.toString().split('\n'));
 });
