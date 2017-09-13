@@ -1,15 +1,26 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>electron es6 react boilerplate</title>
-    <script>
-      // install babel hooks in the renderer process
-      require('babel-register');
-      document.designMode = "On"
-    </script>
-  </head>
 
-  <body>
-    <div></div>
-  </body>
+<head>
+  <title>electron es6 react boilerplate</title>
+  <script>
+    var arbol = null;
+    // install babel hooks in the renderer process
+    require('babel-register');
+    const {ipcRenderer} = require('electron');
+    document.designMode = "On";
+    window.onload = function() {
+      if (arbol == null) {
+        ipcRenderer.send('obtenerArbol');
+        ipcRenderer.on('arbolRecibido', (event, arg) => {
+          console.log(arg);
+        })
+      }
+    }
+  </script>
+</head>
+
+<body>
+</body>
+
 </html>

@@ -1,6 +1,5 @@
-import { app, BrowserWindow } from 'electron';
+import {app, BrowserWindow, ipcMain} from 'electron';
 import fs from 'fs';
-import ipcMain from 'electron';
 import Arbol from './Arbol';
 
 let mainWindow = null;
@@ -12,6 +11,14 @@ app.on('window-all-closed', () => {
   }
 });
 
+fs.readFile('./palabras.txt', 'utf-8', (error, data) => {
+  if (error)
+    throw error;
+  var palabras = data.toString().split('\n');
+  palabras.pop();
+  arbol.ingresarPalabras(palabras);
+});
+
 app.on('ready', () => {
   mainWindow = new BrowserWindow({width: 800, height: 600});
   mainWindow.loadURL('file://' + __dirname + '/index.html');
@@ -20,7 +27,6 @@ app.on('ready', () => {
   });
 });
 
-fs.readFile('./palabras.txt', 'utf-8', (error, data) => {
-  if (error) throw error;
-  arbol.ingresarPalabras(data.toString().split('\n'));
-});
+ipcMain.on('obtenerArbol', (event, arg) => {
+  event.sender.send('arbolRecibido', arbol)
+})
