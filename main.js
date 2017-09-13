@@ -1,6 +1,9 @@
 import {app, BrowserWindow, ipcMain} from 'electron';
+import electron from 'electron'
 import fs from 'fs';
 import Arbol from './Arbol';
+const Menu = electron.Menu
+const MenuItem = electron.MenuItem
 
 let mainWindow = null;
 const arbol = new Arbol();
@@ -10,6 +13,9 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+
+const menu = new Menu()
+console.log(menu);
 
 fs.readFile('./palabras.txt', 'utf-8', (error, data) => {
   if (error)

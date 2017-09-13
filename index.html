@@ -7,15 +7,15 @@
     var arbol = null;
     // install babel hooks in the renderer process
     require('babel-register');
-    const {ipcRenderer} = require('electron');
+    const {
+      ipcRenderer
+    } = require('electron');
     document.designMode = "On";
     window.onload = function() {
-      if (arbol == null) {
-        ipcRenderer.send('obtenerArbol');
-        ipcRenderer.on('arbolRecibido', (event, arg) => {
-          console.log(arg);
-        })
-      }
+      ipcRenderer.send('obtenerArbol');
+      ipcRenderer.on('arbolRecibido', (event, arg) => {
+        arbol = arg
+      })
     }
   </script>
 </head>
