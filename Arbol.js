@@ -2,12 +2,12 @@ import Nodo from './Nodo'
 
 class Arbol {
   constructor() {
-    this.raiz = new Nodo('0');
+    this.raiz = new Nodo('α');
   }
 
   ingresarPalabras(palabras) {
     for (var i = 0; i < palabras.length; i++) {
-      var palabra = Array.from(palabras[i].toLowerCase());
+      var palabra = Array.from(palabras[i].toUpperCase());
       this.agregarPalabra(palabra, 0, this.raiz);
     }
   }
@@ -25,6 +25,15 @@ class Arbol {
       var nodoHijo = nodo.buscarHijo(palabra[i]);
       nodoHijo.finalPalabra = true;
     }
+  }
+
+  buscarSugerencias(palabra){
+    var nodo = this.raiz
+    var sugerencias = []
+    for (var i = 0; i < palabra.length; i++) {
+      nodo = nodo.buscarHijo(palabra[i])
+    }
+    return sugerencias;
   }
 }
 
