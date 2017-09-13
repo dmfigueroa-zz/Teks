@@ -11,12 +11,20 @@
       ipcRenderer
     } = require('electron');
     document.designMode = "On";
-    window.onload = function() {
-      ipcRenderer.send('obtenerArbol');
-      ipcRenderer.on('arbolRecibido', (event, arg) => {
-        arbol = arg
-      })
-    }
+    document.addEventListener('keyup', function(event) {
+      if (document.body.getElementsByTagName('div')[0] === undefined) {
+        var palabra = document.body.textContent.split(' ').pop();
+        ipcRenderer.send('buscarSugerencias', Array.from(palabra))
+      }else{
+        var arrayDiv = document.body.getElementsByTagName('div')
+        var palabra = arrayDiv.item(arrayDiv.length-1).textContent.split(' ').pop();
+        ipcRenderer.send('buscarSugerencias', Array.from(palabra))
+      }
+    });
+
+    ipcRenderer.on('sugerencias', (event, arg) => {
+      console.log(arg);
+    })
   </script>
 </head>
 

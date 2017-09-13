@@ -33,6 +33,6 @@ app.on('ready', () => {
   });
 });
 
-ipcMain.on('obtenerArbol', (event, arg) => {
-  event.sender.send('arbolRecibido', arbol)
+ipcMain.on('buscarSugerencias', (event, arg) => {
+  event.sender.send('sugerencias', arbol.buscarSugerencias(arg))
 })
