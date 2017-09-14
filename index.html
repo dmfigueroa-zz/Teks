@@ -4,23 +4,38 @@
 <head>
   <title>electron es6 react boilerplate</title>
   <script>
-    var arbol = null;
+    var arbol = null
+    var accesoKeyUp = false
     // install babel hooks in the renderer process
     require('babel-register');
     const {
       ipcRenderer
     } = require('electron');
     document.designMode = "On";
-    document.addEventListener('keyup', function(event) {
-      if (document.body.getElementsByTagName('div')[0] === undefined) {
-        var palabra = document.body.textContent.split(' ').pop();
-        ipcRenderer.send('buscarSugerencias', Array.from(palabra))
-      }else{
-        var arrayDiv = document.body.getElementsByTagName('div')
-        var palabra = arrayDiv.item(arrayDiv.length-1).textContent.split(' ').pop();
-        ipcRenderer.send('buscarSugerencias', Array.from(palabra))
+    document.getElementsByTagName('body').textContent = ''
+    document.addEventListener('keypress', function(event) {
+      if (!(event.key === ' ') && !(/^\+?(0|[1-9]\d*)$/.test(event.key))) {
+        accesoKeyUp = true
+      } else {
+        accesoKeyUp = false
       }
     });
+
+    document.addEventListener('keyup', function() {
+      if (accesoKeyUp) {
+        if (document.body.getElementsByTagName('div')[0] === undefined) {
+          var palabra = document.body.textContent.split(' ').pop()
+          palabra = palabra.replace(/(\r\n|\n|\r)/gm, "");
+          ipcRenderer.send('buscarSugerencias', Array.from(palabra))
+          console.log(Array.from(palabra))
+        } else {
+          var arrayDiv = document.body.getElementsByTagName('div')
+          var palabra = arrayDiv.item(arrayDiv.length - 1).textContent.split(' ').pop()
+          ipcRenderer.send('buscarSugerencias', Array.from(palabra))
+          console.log(Array.from(palabra));
+        }
+      }
+    })
 
     ipcRenderer.on('sugerencias', (event, arg) => {
       console.log(arg);
