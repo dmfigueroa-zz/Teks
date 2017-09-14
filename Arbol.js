@@ -27,13 +27,38 @@ class Arbol {
     }
   }
 
-  buscarSugerencias(palabra){
+  buscarSugerencias(palabra) {
     var nodo = this.raiz
     var sugerencias = []
-    for (var i = 0; i < palabra.length; i++) {
-      nodo = nodo.buscarHijo(palabra[i])
+    var i = 0
+    while (i < palabra.length && nodo.buscarHijo(palabra[i].toUpperCase())) {
+      nodo = nodo.buscarHijo(palabra[i].toUpperCase())
+      i++
+    }
+    if (nodo.info === palabra[i - 2]) {
+      this.solve(this.raiz)
     }
     return sugerencias;
+  }
+
+  solve(n) {
+    var pila = []
+    pila.push(n)
+    while (pila.length === 0) {
+      var n = pila.pop()
+      if (n.esHoja()) {
+        if (n.finalPalabra) {
+          console.log(pila);
+          console.log(n.info);
+          return true
+        }
+      } else {
+        for (var i = 0; i < n.hijos.length; i++) {
+          pila.push(n.hijos[i])
+        }
+      }
+      return false
+    }
   }
 }
 
