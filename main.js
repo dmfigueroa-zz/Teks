@@ -14,9 +14,6 @@ app.on('window-all-closed', () => {
   }
 });
 
-const menu = new Menu()
-console.log(menu);
-
 fs.readFile('./palabras.txt', 'utf-8', (error, data) => {
   if (error)
     throw error;
