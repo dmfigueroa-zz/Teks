@@ -1,7 +1,7 @@
 class Nodo {
   constructor(info) {
-    this.info = info;
-    this.hijos = [];
+    this.info = info
+    this.hijos = []
     this.finalPalabra = false;
   }
 

@@ -2,40 +2,76 @@
 <html>
 
 <head>
-  <title>electron es6 react boilerplate</title>
+  <title>Teks</title>
+  <style media="screen">
+    body {
+      margin: 0;
+      padding: 0
+    }
+
+    #editor {
+      width: 98vw;
+      height: 98vh;
+      border: none;
+      resize: none;
+    }
+
+    #editor:focus {
+      outline: none !important;
+      border-color: none;
+      box-shadow: none;
+    }
+  </style>
   <script>
     var arbol = null
-    var accesoKeyUp = false
     // install babel hooks in the renderer process
     require('babel-register');
     const {
       ipcRenderer
     } = require('electron');
-    document.designMode = "On";
-    document.getElementsByTagName('body').textContent = ''
-    document.addEventListener('keypress', function(event) {
-      if (!(event.key === ' ') && !(/^\+?(0|[1-9]\d*)$/.test(event.key))) {
-        accesoKeyUp = true
-      } else {
-        accesoKeyUp = false
-      }
-    });
+    window.onload = function() {
+      ipcRenderer.send('obtenerArbol');
+      ipcRenderer.on('arbolRecibido', (event, arg) => {
+        arbol = arg
+      })
+    }
 
     document.addEventListener('keyup', function() {
-      if (accesoKeyUp) {
-        if (document.body.getElementsByTagName('div')[0] === undefined) {
-          var palabra = document.body.textContent.split(' ').pop()
-          palabra = palabra.replace(/(\r\n|\n|\r)/gm, "");
-          ipcRenderer.send('buscarSugerencias', Array.from(palabra))
-          console.log(Array.from(palabra))
-        } else {
-          var arrayDiv = document.body.getElementsByTagName('div')
-          var palabra = arrayDiv.item(arrayDiv.length - 1).textContent.split(' ').pop()
-          ipcRenderer.send('buscarSugerencias', Array.from(palabra))
-          console.log(Array.from(palabra));
+      if (/[a-zA-ZÀ-ƒ]+/g.test(event.key)) {
+        var textfield = document.getElementById('editor')
+        var caretPos = GetCaretPosition(textfield)
+        var palabra = ReturnWord(textfield.value, caretPos);
+        if (palabra != null) {
+          console.log(palabra)
+          ipcRenderer.send('buscarSugerencias', palabra.toUpperCase())
         }
       }
     })
+
+    function ReturnWord(text, caretPos) {
+      var index = text.indexOf(caretPos);
+      var preText = text.substring(0, caretPos);
+      if (preText.indexOf(" ") > 0) {
+        var words = preText.split(" ");
+        return words[words.length - 1]; //return last word
+      } else {
+        return preText;
+      }
+    }
+
+    function GetCaretPosition(ctrl) {
+      var CaretPos = 0; // IE Support
+      if (document.selection) {
+        ctrl.focus();
+        var Sel = document.selection.createRange();
+        Sel.moveStart('character', -ctrl.value.length);
+        CaretPos = Sel.text.length;
+      }
+      // Firefox support
+      else if (ctrl.selectionStart || ctrl.selectionStart == '0')
+        CaretPos = ctrl.selectionStart;
+      return (CaretPos);
+    }
 
     ipcRenderer.on('sugerencias', (event, arg) => {
       console.log(arg);
@@ -44,6 +80,7 @@
 </head>
 
 <body>
+  <textarea autofocus id="editor"></textarea>
 </body>
 
 </html>

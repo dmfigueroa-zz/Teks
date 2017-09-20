@@ -3,6 +3,7 @@ import Nodo from './Nodo'
 class Arbol {
   constructor() {
     this.raiz = new Nodo('α');
+    this.sugerencias = []
   }
 
   ingresarPalabras(palabras) {
@@ -29,35 +30,28 @@ class Arbol {
 
   buscarSugerencias(palabra) {
     var nodo = this.raiz
-    var sugerencias = []
+    this.sugerencias = []
     var i = 0
-    while (i < palabra.length && nodo.buscarHijo(palabra[i].toUpperCase())) {
-      nodo = nodo.buscarHijo(palabra[i].toUpperCase())
+    while (i < palabra.length && nodo) {
+      nodo = nodo.buscarHijo(palabra[i])
       i++
     }
-    if (nodo.info === palabra[i - 2]) {
-      this.solve(this.raiz)
+    if (nodo) {
+      if (nodo.info === palabra[i - 1]) {
+        this.solve(nodo, palabra.substring(0, i - 1))
+      }
+    }else{
+      this.sugerencias = 'No hay sugerencias disponibles'
     }
-    return sugerencias;
+    return this.sugerencias;
   }
 
-  solve(n) {
-    var pila = []
-    pila.push(n)
-    while (pila.length === 0) {
-      var n = pila.pop()
-      if (n.esHoja()) {
-        if (n.finalPalabra) {
-          console.log(pila);
-          console.log(n.info);
-          return true
-        }
-      } else {
-        for (var i = 0; i < n.hijos.length; i++) {
-          pila.push(n.hijos[i])
-        }
-      }
-      return false
+  solve(nodo, palabra) {
+    for (var i = 0; i < nodo.hijos.length; i++) {
+      this.solve(nodo.hijos[i], palabra + nodo.info)
+    }
+    if (nodo.finalPalabra) {
+      this.sugerencias.push(palabra + nodo.info)
     }
   }
 }
