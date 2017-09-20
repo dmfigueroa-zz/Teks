@@ -24,6 +24,7 @@
   </style>
   <script>
     var arbol = null
+    var ctrl = false
     // install babel hooks in the renderer process
     require('babel-register');
     const {
@@ -39,14 +40,37 @@
     document.addEventListener('keyup', function() {
       if (/[a-zA-ZÀ-ƒ]+/g.test(event.key)) {
         var textfield = document.getElementById('editor')
-        var caretPos = GetCaretPosition(textfield)
+        var caretPos = posicionCursor(textfield)
         var palabra = ReturnWord(textfield.value, caretPos);
-        if (palabra != null) {
-          console.log(palabra)
+        if (palabra != null && !(/[^a-zA-ZÀ-ƒ]+/g.test(palabra))) {
           ipcRenderer.send('buscarSugerencias', palabra.toUpperCase())
         }
+        ctrl = false
       }
     })
+
+    document.addEventListener('keydown', function(e) {
+      if ((e.metaKey || e.ctrlKey) && (String.fromCharCode(e.which) === ' ')) {
+        taskItemInContext = clickInsideElement(e);
+
+        if (taskItemInContext) {
+          e.preventDefault();
+          toggleMenuOn();
+          positionMenu(e);
+        } else {
+          taskItemInContext = null;
+          toggleMenuOff();
+        }
+      }
+    });
+
+    function clickInsideElement(e) {
+      console.log(e.srcElement);
+      console.log(e.target);
+      var el = e.srcElement || e.target;
+      console.log(el);
+      return el;
+    }
 
     function ReturnWord(text, caretPos) {
       var index = text.indexOf(caretPos);
@@ -59,7 +83,7 @@
       }
     }
 
-    function GetCaretPosition(ctrl) {
+    function posicionCursor(ctrl) {
       var CaretPos = 0; // IE Support
       if (document.selection) {
         ctrl.focus();
