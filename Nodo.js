@@ -6,7 +6,8 @@ class Nodo {
   }
 
   esPadreDe(letra) {
-    var i = 0, encontrado = false
+    var i = 0,
+      encontrado = false
     while (!encontrado && i < this.hijos.length) {
       if (this.hijos[i].info === letra) {
         encontrado = true
