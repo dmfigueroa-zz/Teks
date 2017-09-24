@@ -7,7 +7,8 @@ class Arbol {
   }
 
   ingresarPalabras(palabras) {
-    for (var i = 0; i < palabras.length; i++) {
+    var i = palabras.length
+    while (i--) {
       var palabra = Array.from(palabras[i].toUpperCase());
       this.agregarPalabra(palabra, 0, this.raiz);
     }
