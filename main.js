@@ -21,7 +21,16 @@ fs.readFile('./palabras.txt', 'utf-8', (error, data) => {
   palabras.pop();
   arbol.ingresarPalabras(palabras);
 
-  mainWindow = new BrowserWindow({width: 800, height: 600, 'node-integration': false});
+  mainWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    'node-integration': false,
+    icon: __dirname + '/icon.png',
+    webPreferences: {
+      devTools: true
+    }
+  });
+  mainWindow.webContents.openDevTools()
   mainWindow.loadURL('file://' + __dirname + '/index.html');
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -31,11 +40,7 @@ fs.readFile('./palabras.txt', 'utf-8', (error, data) => {
 app.on('ready', () => {});
 
 ipcMain.on('buscarSugerencias', (event, palabra) => {
-  event.sender.send('sugerencias', arbol.buscarSugerencias(palabra))
-})
-
-ipcMain.on('obtenerArbol', (event, arg) => {
-  event.sender.send('arbolRecibido', arbol)
+  event.returnValue = arbol.buscarSugerencias(palabra)
 })
 
 ipcMain.on('agregarPalabraDicionario', (event, arg) => {
@@ -51,4 +56,18 @@ ipcMain.on('agregarPalabraDicionario', (event, arg) => {
       }
     })
   })
+})
+
+ipcMain.on('nuevaVentana', (event, arg) => {
+  let window = new BrowserWindow({
+    width: 800,
+    height: 600,
+    'node-integration': false,
+    icon: __dirname + '/icon.png'
+  });
+  window.loadURL('file://' + __dirname + '/index.html');
+  window.on('closed', () => {
+    arg = null;
+  });
+  console.log(arg);
 })
