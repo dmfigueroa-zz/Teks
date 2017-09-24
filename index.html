@@ -43,6 +43,51 @@
     var archivo
     // install babel hooks in the renderer process
     require('babel-register');
+    console.log(this);
+    var templateMenu = [{
+      label: 'Archivo',
+      submenu: [{
+        label: 'Nuevo',
+        accelerator: 'CmdOrCtrl+N',
+        ventana: 'ventana',
+        click(item) {
+          ipcRenderer.sendSync('nuevaVentana', item.ventana)
+        }
+      }, {
+        type: 'separator'
+      }, {
+        label: 'Abrir',
+        click() {
+          abrirArchivo()
+        }
+      }]
+    }, {
+      label: 'Editar',
+      submenu: [{
+        label: 'Deshacer',
+        role: 'undo'
+      }, {
+        role: 'redo'
+      }, {
+        type: 'separator'
+      }, {
+        role: 'cut'
+      }, {
+        role: 'copy'
+      }, {
+        role: 'paste'
+      }, {
+        role: 'pasteandmatchstyle'
+      }, {
+        role: 'delete'
+      }, {
+        role: 'selectall'
+      }]
+    }]
+
+
+    var menuVentana = Menu.buildFromTemplate(templateMenu)
+    Menu.setApplicationMenu(menuVentana)
 
     var _require = require('electron'),
       ipcRenderer = _require.ipcRenderer;
@@ -56,96 +101,83 @@
 
     window.onload = function() {};
 
-    document.addEventListener('keyup', function() {
-      if (/[a-zA-ZÀ-ƒ]+/g.test(event.key)) {
-        var posicion = jQuery('#editor').caret('pos');
-        var textfield = document.getElementById('editor');
-        var palabra = ReturnWord(textfield.value, posicion);
-        if (palabra != null && !/[^a-zA-ZÀ-ƒ]+/g.test(palabra)) {
-          ipcRenderer.send('buscarSugerencias', palabra.toUpperCase());
-        }
-        ctrl = false;
-      }
-    });
-
-
     document.addEventListener('keydown', function(e) {
       if ((e.metaKey || e.ctrlKey) && String.fromCharCode(e.which) === ' ') {
         var posicion = jQuery('#editor').caret('pos');
-        var textfield = document.getElementById('editor')
-        var palabra = ReturnWord(textfield.value, posicion);
-        if (palabra != null && !/[^a-zA-ZÀ-ƒ]+/g.test(palabra)) {
-          ipcRenderer.send('buscarSugerencias', palabra.toUpperCase());
-        }
-        var menu = new Menu()
-        if (sugerencias[0].toUpperCase() == "N" && sugerencias[1].toUpperCase() == 'O') {
-          var menuItem = new MenuItem({
-            label: 'No hay sugerencias disponibles'
-          })
-          menu.append(menuItem)
-          menuItem = new MenuItem({
-            type: 'separator'
-          })
-          menu.append(menuItem)
-          menuItem = new MenuItem({
-            label: 'Agregar a Diccionario',
-            palabra: palabra,
-            click: function(currentItem) {
-              ipcRenderer.send('agregarPalabraDicionario', currentItem.palabra)
-            }
-          })
-          menu.append(menuItem)
-        } else {
-          for (var i = 0; i < sugerencias.length; i++) {
-            var sug = sugerencias[i]
-            var texto = textfield.value
-            if (palabra[0] === palabra[0].toUpperCase()) {
-              if (palabra[1] === palabra[1].toUpperCase()) {
-                sug = sug.toUpperCase()
-                var menuItem = new MenuItem({
-                  label: sug,
-                  palabra: palabra,
-                  texto: texto,
-                  posicion: posicion,
-                  click: function(currentItem) {
-                    replaceWord(currentItem.palabra, currentItem.label, currentItem.posicion, currentItem.texto)
-                  }
-                })
-
-                menu.append(menuItem)
-              } else {
-                sug = sug.toCapital()
-                var menuItem = new MenuItem({
-                  label: sug,
-                  palabra: palabra,
-                  texto: texto,
-                  posicion: posicion,
-                  click: function(currentItem) {
-                    replaceWord(currentItem.palabra, currentItem.label, currentItem.posicion, currentItem.texto)
-                  }
-                })
-
-                menu.append(menuItem)
+        var text = document.getElementById('editor').value
+        var palabra = ReturnWord(text, posicion);
+        if (palabra.length >= 3) {
+          if (palabra != null && !/[^a-zA-ZÀ-ƒ]+/g.test(palabra)) {
+            sugerencias = ipcRenderer.sendSync('buscarSugerencias', palabra.toUpperCase());
+          }
+          var menu = new Menu()
+          if (sugerencias && sugerencias[0].toUpperCase() == "N" && sugerencias[1].toUpperCase() == 'O') {
+            var menuItem = new MenuItem({
+              label: 'No hay sugerencias disponibles'
+            })
+            menu.append(menuItem)
+            menuItem = new MenuItem({
+              type: 'separator'
+            })
+            menu.append(menuItem)
+            menuItem = new MenuItem({
+              label: 'Agregar a Diccionario',
+              palabra: palabra,
+              click: function(currentItem) {
+                ipcRenderer.send('agregarPalabraDicionario', currentItem.palabra)
               }
-            } else {
-              sug = sug.toLowerCase()
-              var menuItem = new MenuItem({
-                label: sug,
-                palabra: palabra,
-                texto: texto,
-                posicion: posicion,
-                click: function(currentItem) {
-                  replaceWord(currentItem.palabra, currentItem.label, currentItem.posicion, currentItem.texto)
-                }
-              })
+            })
+            menu.append(menuItem)
+          } else if (sugerencias) {
+            var i = sugerencias.length
+            while (i--) {
+              var sug = sugerencias[i]
+              if (palabra[0] === palabra[0].toUpperCase()) {
+                if (palabra[1] === palabra[1].toUpperCase()) {
+                  sug = sug.toUpperCase()
+                  var menuItem = new MenuItem({
+                    label: sug,
+                    palabra: palabra,
+                    texto: text,
+                    posicion: posicion,
+                    click: function(currentItem) {
+                      replaceWord(currentItem.palabra, currentItem.posicion, currentItem.label, currentItem.texto)
+                    }
+                  })
 
+                  menu.append(menuItem)
+                } else {
+                  sug = sug.toCapital()
+                  var menuItem = new MenuItem({
+                    label: sug,
+                    palabra: palabra,
+                    texto: text,
+                    posicion: posicion,
+                    click: function(currentItem) {
+                      replaceWord(currentItem.palabra, currentItem.posicion, currentItem.label, currentItem.texto)
+                    }
+                  })
+
+                  menu.append(menuItem)
+                }
+              } else {
+                sug = sug.toLowerCase()
+                var menuItem = new MenuItem({
+                  label: sug,
+                  palabra: palabra,
+                  texto: text,
+                  posicion: posicion,
+                  click: function(currentItem) {
+                    replaceWord(currentItem.palabra, currentItem.posicion, currentItem.label, currentItem.texto)
+                  }
+                })
+              }
               menu.append(menuItem)
             }
           }
+          sugerencias = []
+          menu.popup(remote.getCurrentWindow())
         }
-
-        menu.popup(remote.getCurrentWindow())
-
       } else if (event.ctrlKey || event.metaKey) {
         switch (String.fromCharCode(event.which).toLowerCase()) {
           case 's':
@@ -169,6 +201,10 @@
       }
     })
 
+    function mostrarSugerencias(seleccion) {
+
+    }
+
     function archivoNoGuardado() {
       var confirmar = dialog.showMessageBox(
         remote.getCurrentWindow(), {
@@ -179,7 +215,7 @@
         });
       if (confirmar === 0) {
         fs.writeFile(archivo, document.getElementById("editor").value, function(err) {});
-      }else{
+      } else {
         abrirArchivo()
       }
     }
@@ -195,22 +231,10 @@
       })
     }
 
-    function replaceWord(palabra, sugerencia, posicion, texto) {
-      var index = texto.indexOf(posicion);
-      var preText = texto.substring(0, posicion);
-      var palabras = texto.split(' ')
-      var i = 0
-      while (palabras[i] != palabra) {
-        i++
-      }
-      palabras[i] = sugerencia
-
-      console.log(sugerencia);
-      var newText = palabras[0]
-      for (var i = 1; i < palabras.length; i++) {
-        newText += ' ' + palabras[i]
-      }
-      console.log(newText);
+    function replaceWord(palabra, posicion, sugerencia, texto) {
+      var preText = texto.substring(0, posicion - palabra.length);
+      var postext = texto.substring(posicion, texto.length)
+      var newText = preText + sugerencia + postext
       jQuery("#editor").val(newText);
     }
 
@@ -222,16 +246,13 @@
       var index = text.indexOf(caretPos);
       var preText = text.substring(0, caretPos);
       if (preText.indexOf(" ") > 0) {
+        preText = preText.replace(/\n/g, ' ')
         var words = preText.split(" ");
         return words[words.length - 1]; //return last word
       } else {
         return preText;
       }
     }
-
-    ipcRenderer.on('sugerencias', function(event, arg) {
-      sugerencias = arg;
-    });
   </script>
 </head>
 
