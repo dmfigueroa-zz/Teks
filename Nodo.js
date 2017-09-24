@@ -23,7 +23,6 @@ class Nodo {
   }
 
   buscarHijo(info) {
-    //console.log(this);
     return (this.hijos.find(hijo => hijo.info.toString() === info.toString()))
   }
 };
